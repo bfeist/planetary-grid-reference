@@ -1,0 +1,42 @@
+name: Publish npm package
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag matching package.json (for example v0.1.0-beta.1)
+        required: true
+        type: string
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      - run: npm install --global npm@11.21.0
+      - name: Check tag and select npm distribution tag
+        id: release
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync, appendFileSync } from "node:fs";
+          const { version } = JSON.parse(readFileSync("package.json", "utf8"));
+          if (process.env.RELEASE_TAG !== `v${version}`) throw new Error("Release tag must match package.json version");
+          appendFileSync(process.env.GITHUB_OUTPUT, `dist_tag=${version.includes("-") ? "beta" : "latest"}\n`);
+          JS
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run check
+      - name: Publish through npm trusted publishing
+        env:
+          DIST_TAG: ${{ steps.release.outputs.dist_tag }}
+        run: npm publish --access public --provenance --tag "$DIST_TAG"

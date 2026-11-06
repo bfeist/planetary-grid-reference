@@ -1,0 +1,58 @@
+Planetary Grid Reference
+
+Extracted from the public AEGIS implementation at commit
+212d2a4355bd555469722b1c8f082b128b9fd231 (feat-mgrs).
+AEGIS: Application for Exploration Geospatial Integration and Scheduling.
+Extraction and packaging changes: 2026.
+
+Selected lunar coordinate formatting aspects are ported/adapted from Python LGRS
+v0.4.0, commit 1f11a12ac20e4f4aab89805535319252a2abd2eb:
+https://github.com/rbeyer/lgrs
+Copyright (c) 2026, Ethan I. Schaefer (eschaefer@seti.org).
+Licensed under the Apache License, Version 2.0; see LICENSE.
+LGRS was developed at the SETI Institute based on open USGS code.
+Contributors credited upstream include Ross Beyer and Mark McClernan.
+The TypeScript port uses explicit numerical boundary handling, a functional
+buffer-oriented API, and additional Earth analog and grid-planning algorithms.
+
+Lunar projection parameters, coordinate conventions and lettering tables follow
+McClernan et al. (2025), USGS Techniques and Methods 11-E1:
+https://doi.org/10.3133/tm11E1
+Earth analog ACC lettering draws on the USGS terrestrial training-grid release:
+https://doi.org/10.5066/P14KSANW
+The worldwide Earth ACC area prefix is an AEGIS-originated convention.
+Earth MGRS lettering follows NGA Universal Grids and Grid Reference Systems.
+These source references do not imply endorsement of this package.
+
+The map projection fast paths in src/mapProjection.ts adapt proj4js formulas;
+proj4 is also an external runtime dependency. Its notice follows in full.
+
+## Proj4js -- Javascript reprojection library. 
+ 
+Authors:
+- Mike Adair madairATdmsolutions.ca
+- Richard Greenwood richATgreenwoodmap.com
+- Didier Richard didier.richardATign.fr
+- Stephen Irons stephen.ironsATclear.net.nz
+- Olivier Terral oterralATgmail.com
+- Calvin Metcalf cmetcalfATappgeo.com
+
+Copyright (c) 2014, Mike Adair, Richard Greenwood, Didier Richard, Stephen Irons, Olivier Terral and Calvin Metcalf
+
+ Permission is hereby granted, free of charge, to any person obtaining a
+ copy of this software and associated documentation files (the "Software"),
+ to deal in the Software without restriction, including without limitation
+ the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ and/or sell copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included
+ in all copies or substantial portions of the Software.
+
+ _THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ DEALINGS IN THE SOFTWARE._

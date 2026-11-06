@@ -1,0 +1,12 @@
+node_modules/
+dist/
+*.tgz
+coverage/
+playwright-report/
+test-results/
+.local/
+
+# Python reference tooling
+.venv/
+__pycache__/
+*.py[cod]

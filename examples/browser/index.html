@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Planetary Grid Reference browser example</title>
+  <style>
+    body {
+      font: 16px system-ui;
+      margin: 2rem;
+      color: #17324f;
+    }
+    canvas {
+      max-width: 100%;
+      border: 1px solid #5378a1;
+    }
+    output {
+      display: block;
+      white-space: pre-wrap;
+      margin: 1rem 0;
+    }
+  </style>
+  <h1>Lunar coordinates and Earth analog grid</h1>
+  <p>Coordinates and geometry are calculated locally in JavaScript.</p>
+  <output>Loading…</output>
+  <canvas width="800" height="600" aria-label="Earth analog grid near JSC"></canvas>
+  <script type="module" src="./bundle.js"></script>
+</html>
