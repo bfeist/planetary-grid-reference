@@ -2,7 +2,7 @@
 
 WGS84 UTM/UPS projection comes from pyproj, 100 km square IDs from the PyPI `mgrs`
 package (GeoTrans), and zone classification and ACC labels from an independent
-implementation of the methodology documented in src/utils/lgrs/README.md.
+implementation of the methodology documented in docs/methodology.md.
 
 Run from the repository root with ``npm run lgrs:reference-corpus-earth`` (an alias for
 ``uv run --project scripts/lgrs-reference earth``).
