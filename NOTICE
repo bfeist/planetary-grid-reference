@@ -27,8 +27,8 @@ These source references do not imply endorsement of this package.
 The map projection fast paths in src/mapProjection.ts adapt proj4js formulas;
 proj4 is also an external runtime dependency. Its notice follows in full.
 
-## Proj4js -- Javascript reprojection library. 
- 
+## Proj4js -- Javascript reprojection library.
+
 Authors:
 - Mike Adair madairATdmsolutions.ca
 - Richard Greenwood richATgreenwoodmap.com
