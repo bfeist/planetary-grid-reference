@@ -11,7 +11,7 @@ Keep the package's existing two-factor authentication requirements enabled.
 For a release:
 
 1. Update the version and lockfile, document output/API changes, and run `npm run check`.
-2. Commit, push, and create a matching tag such as `v0.1.0-beta.1`.
+2. Commit, push, and create a matching tag such as `v0.1.0`.
 3. Run the **Publish npm package** workflow with that tag as its input.
 4. Verify the published artifact and install that exact version in the consuming app.
 

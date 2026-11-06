@@ -1,7 +1,9 @@
 # LGRS, MGRS and Artemis Condensed Coordinates
 
-This directory implements the coordinate systems used by AEGIS's dynamic grids, coordinate
-readouts and grid-north bearings. The Moon uses LGRS on the IAU 2015 lunar sphere. Earth uses
+This library provides coordinate systems and grid geometry for browser applications.
+Its primary consumer is NASA's public [AEGIS application](https://github.com/nasa/aegis),
+which uses it for dynamic grids, coordinate readouts, and projections for grid-north bearings.
+The Moon uses LGRS on the IAU 2015 lunar sphere. Earth uses
 WGS84 UTM/UPS, labelled either as standard MGRS or with ACC-style letters for lunar navigation
 training. Both Earth label schemes use the same projections and MGRS 100 km squares.
 

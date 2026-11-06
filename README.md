@@ -6,8 +6,8 @@ It brings lunar LTM/LPS coordinate projection and LGRS/ACC formatting to browser
 applications, with additional grid-planning and Earth analog capabilities.
 Calculations run locally without a Python runtime, Pyodide, or a calculation server.
 
-The initial implementation was extracted from AEGIS at commit
-`212d2a4355bd555469722b1c8f082b128b9fd231`. It follows the USGS M2025 lunar
+The package is primarily used by NASA's public [AEGIS application](https://github.com/nasa/aegis)
+for lunar grids and Earth analog training. It follows the USGS M2025 lunar
 methodology and is checked against Python `lgrs==0.4.0`. It implements a focused
 subset of that project rather than its Python class API. The supported bodies
 are the Moon and Earth.
@@ -15,7 +15,7 @@ are the Moon and Earth.
 ## Install and use
 
 ```sh
-npm install @bfeist/planetary-grid-reference@beta
+npm install @bfeist/planetary-grid-reference
 ```
 
 Import the ESM package in a browser application built with a standard bundler:
@@ -160,8 +160,8 @@ npm run bench
 
 The unit suite includes the pinned lunar corpus, Earth pyproj/GeoTrans-based
 reference corpus, boundary/property tests, projection fast-path comparisons, and
-south-LPS golden geometry. Existing fixtures and numerical tolerances were retained
-from the extraction source. Earth projection error must be at most one micrometre
+south-LPS golden geometry. Reference fixtures preserve the numerical tolerances
+used to validate the coordinate methods. Earth projection error must be at most one micrometre
 per axis; end-to-end strings near a box boundary have the documented corpus
 allowance. See the [Earth corpus guide](fixtures/lgrs-earth/v1/README.md).
 

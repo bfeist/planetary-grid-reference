@@ -1,9 +1,10 @@
 Planetary Grid Reference
 
-Extracted from the public AEGIS implementation at commit
-212d2a4355bd555469722b1c8f082b128b9fd231 (feat-mgrs).
+Primarily used by NASA's public AEGIS application:
+https://github.com/nasa/aegis
 AEGIS: Application for Exploration Geospatial Integration and Scheduling.
-Extraction and packaging changes: 2026.
+AEGIS contributors developed the browser grid-planning and Earth analog features.
+JavaScript/TypeScript adaptation and packaging changes: 2026.
 
 Selected lunar coordinate formatting aspects are ported/adapted from Python LGRS
 v0.4.0, commit 1f11a12ac20e4f4aab89805535319252a2abd2eb:
