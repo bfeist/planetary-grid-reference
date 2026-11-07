@@ -1,6 +1,6 @@
 {
   "name": "@bfeist/planetary-grid-reference",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Browser-oriented TypeScript port of selected LGRS coordinate features, with Earth analog grids.",
   "type": "module",
   "sideEffects": false,
@@ -81,5 +81,8 @@
     "browser",
     "typescript",
     "analog"
-  ]
+  ],
+  "bin": {
+    "planetary-grid-reference": "dist/cli.js"
+  }
 }

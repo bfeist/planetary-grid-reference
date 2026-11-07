@@ -1,42 +1,89 @@
 name: Publish npm package
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
-    inputs:
-      tag:
-        description: Existing release tag matching package.json (for example v0.1.0)
-        required: true
-        type: string
 permissions:
   contents: read
-  id-token: write
+concurrency:
+  group: publish-npm
+  queue: max
 jobs:
-  publish:
+  prepare:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      action: ${{ steps.release.outputs.action }}
+      tag: ${{ steps.release.outputs.tag }}
+      dist_tag: ${{ steps.release.outputs.dist_tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check the registry and release tag
+        id: release
+        run: node scripts/npm-release.mjs
+  validate:
+    needs: prepare
+    if: needs.prepare.outputs.action == 'publish'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.tag }}
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
-          registry-url: https://registry.npmjs.org
-      - run: npm install --global npm@11.21.0
-      - name: Check tag and select npm distribution tag
-        id: release
-        env:
-          RELEASE_TAG: ${{ inputs.tag }}
-        run: |
-          node --input-type=module <<'JS'
-          import { readFileSync, appendFileSync } from "node:fs";
-          const { version } = JSON.parse(readFileSync("package.json", "utf8"));
-          if (process.env.RELEASE_TAG !== `v${version}`) throw new Error("Release tag must match package.json version");
-          appendFileSync(process.env.GITHUB_OUTPUT, `dist_tag=${version.includes("-") ? "beta" : "latest"}\n`);
-          JS
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run check
+      - uses: actions/upload-artifact@v4
+        with:
+          name: npm-dist
+          path: dist
+          if-no-files-found: error
+  publish:
+    needs: [prepare, validate]
+    if: >-
+      ${{ !cancelled() && needs.prepare.result == 'success' &&
+      (needs.prepare.outputs.action == 'tag' ||
+      (needs.prepare.outputs.action == 'publish' && needs.validate.result == 'success')) }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        if: needs.prepare.outputs.action == 'publish'
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - uses: actions/download-artifact@v4
+        if: needs.prepare.outputs.action == 'publish'
+        with:
+          name: npm-dist
+          path: dist
       - name: Publish through npm trusted publishing
+        if: needs.prepare.outputs.action == 'publish'
         env:
-          DIST_TAG: ${{ steps.release.outputs.dist_tag }}
-        run: npm publish --access public --provenance --tag "$DIST_TAG"
+          DIST_TAG: ${{ needs.prepare.outputs.dist_tag }}
+        run: |
+          npm install --global npm@11.21.0
+          npm publish --ignore-scripts --access public --provenance --tag "$DIST_TAG"
+      - name: Tag the published commit
+        env:
+          RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+        run: |
+          if ! git show-ref --verify --quiet "refs/tags/$RELEASE_TAG"; then
+            git tag "$RELEASE_TAG" "$GITHUB_SHA"
+            git push origin "refs/tags/$RELEASE_TAG"
+          fi
+          test "$(git rev-list -1 "refs/tags/$RELEASE_TAG")" = "$GITHUB_SHA"

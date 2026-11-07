@@ -149,6 +149,36 @@ ownership. Earth assigns exactly 84 degrees north to UPS. See
 ESM JavaScript and `.d.ts` declarations are shipped. There is no CommonJS build.
 Internal source paths and `/earth` or `/mgrs` imports are not public exports.
 
+## Exporting GeoJSON
+
+Use the installed `planetary-grid-reference` command or run it with `npx`:
+
+```sh
+npx @bfeist/planetary-grid-reference export-geojson --planet earth --labels mgrs --bbox=-95.10,29.55,-95.08,29.57 --spacing 100 --name JSC --output jsc.geojson
+npx @bfeist/planetary-grid-reference export-geojson --planet moon --labels lgrs --bbox=29.99,-86.001,30.01,-85.999 --spacing 100 --output lunar-site.geojson
+```
+
+Earth accepts `--labels mgrs` (default) or `--labels acc` on the same WGS84
+UTM/UPS lattice. The Moon uses `--labels lgrs` (default) on the M2025 LTM/LPS
+lattice. The CLI projects the longitude/latitude bounds, snaps the projected
+rectangle outward, and includes the points on all four snapped edges. Both the
+input bounds and snapped rectangle must fit within one projection zone or polar
+cap. Split an area at a zone or antimeridian boundary when it crosses one.
+Spacing is 10, 100 (default), or 1,000 metres. Each export is limited to 250,000
+points. Omit `--output` to write to standard output.
+
+The point collection has zero-based `row` and `column` indices increasing from
+grid southwest, `row_total` and `column_total` dimensions, and AEGIS display
+fields `L_coord` and `R_coord`. MGRS includes the full reference in `MGRS` and in
+the display fields together. Earth ACC includes the full compact `LGRS_ACC` and
+displays its two condensed axes. Lunar exports include numeric `LGRS` and
+compact `LGRS_ACC`, with the two condensed ACC axes for display.
+
+Coordinates are ordered longitude, latitude. Earth output uses WGS84
+(`OGC:CRS84`). Lunar output uses IAU 2015 planetocentric coordinates
+(`IAU_2015:30100`) in the same JSON structure and needs a Moon-aware consumer.
+The collection identifies the planet, coordinate CRS, and projected grid zone.
+
 ## Validation
 
 ```sh
