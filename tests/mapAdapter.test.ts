@@ -3,6 +3,7 @@ import type { LgrsMapProjection } from "../src/types.js";
 import proj4 from "proj4";
 
 import { getLgrsGridBinding } from "../src/gridBinding.js";
+import { getLgrsMapProjector, isUsableProjector } from "../src/mapProjection.js";
 import { LGRS_CRS_LPS_NORTH, LGRS_CRS_LPS_SOUTH, getLtmCrsId } from "../src/moon/crs.js";
 import { formatLatLonAsLgrs, formatLgrsAtMapCoordinate } from "../src/moon/format.js";
 import { projectLatLon, unprojectToLatLon } from "../src/moon/projection.js";
@@ -49,6 +50,38 @@ function expectProj4Identical(projCode: string, def: string | null, points: numb
   }
   expect(compared).toBeGreaterThan(points.length * 0.9);
 }
+
+describe("lunar grid compatibility inputs", () => {
+  test.each([
+    { projCode: "IAU:30135", proj4Def: SOUTH_CAP },
+    { projCode: "AEGIS:7", proj4Def: SOUTH_CAP },
+    { projCode: "IAU:30130", proj4Def: NORTH_CAP },
+    { projCode: "IAU:30110", proj4Def: MOON_EQC },
+    { projCode: "EPSG:3857", proj4Def: null },
+  ])("can use $projCode with the lunar radius", (projection) => {
+    expect(moonGridSystem.checkPlanetRadius(1737400)).toBeNull();
+    const projector = getLgrsMapProjector(projection);
+    expect(projector.projection).toEqual(projection);
+    expect(isUsableProjector(projector)).toBe(true);
+    expect(projector.latLonToMap(-45, 45, out)).toBe(true);
+  });
+
+  test.each([1737000, 1737400.5, null, undefined])(
+    "requires the lunar radius (got %s)",
+    (radius) => {
+      expect(moonGridSystem.checkPlanetRadius(radius)).toMatch(/radius.*1737400/);
+    }
+  );
+
+  test("requires a projection proj4 can parse", () => {
+    const projector = getLgrsMapProjector({
+      projCode: "TEST:UNKNOWN",
+      proj4Def: "+proj=notaprojection",
+    });
+    expect(isUsableProjector(projector)).toBe(false);
+    expect(projector.latLonToMap(-45, 45, out)).toBe(false);
+  });
+});
 
 describe("moon grid binding fast paths", () => {
   test("reports cylindrical world widths in map units regardless of false origin", () => {

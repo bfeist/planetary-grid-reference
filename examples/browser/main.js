@@ -19,23 +19,29 @@ const plan = createLgrsRenderPlan({
 
 const canvas = document.querySelector("canvas");
 const context = canvas.getContext("2d");
-const x = (value) => ((value - extent[0]) / (extent[2] - extent[0])) * canvas.width;
-const y = (value) => ((extent[3] - value) / (extent[3] - extent[1])) * canvas.height;
 context.fillStyle = "#f7f9fc";
 context.fillRect(0, 0, canvas.width, canvas.height);
-context.strokeStyle = "#5378a1";
-for (const line of plan.lines) {
-  context.beginPath();
-  for (let index = 0; index < line.coordinates.length; index += 2) {
-    const draw = index === 0 ? context.moveTo.bind(context) : context.lineTo.bind(context);
-    draw(x(line.coordinates[index]), y(line.coordinates[index + 1]));
+drawGrid(canvas, plan, extent);
+
+export function drawGrid(canvas, plan, extent) {
+  const context = canvas.getContext("2d");
+  const x = (value) => ((value - extent[0]) / (extent[2] - extent[0])) * canvas.width;
+  const y = (value) => ((extent[3] - value) / (extent[3] - extent[1])) * canvas.height;
+  context.strokeStyle = "#5378a1";
+  for (const line of plan.lines) {
+    context.lineWidth = line.kind === "seam" ? 2 : 1;
+    context.beginPath();
+    for (let index = 0; index < line.coordinates.length; index += 2) {
+      const draw = index === 0 ? context.moveTo.bind(context) : context.lineTo.bind(context);
+      draw(x(line.coordinates[index]), y(line.coordinates[index + 1]));
+    }
+    context.stroke();
   }
-  context.stroke();
-}
-context.font = "10px sans-serif";
-context.fillStyle = "#17324f";
-for (const label of plan.labels) {
-  context.fillText(label.text, x(label.coordinate[0]) + 3, y(label.coordinate[1]) - 3);
+  context.font = "10px sans-serif";
+  context.fillStyle = "#17324f";
+  for (const label of plan.labels) {
+    context.fillText(label.text, x(label.coordinate[0]) + 3, y(label.coordinate[1]) - 3);
+  }
 }
 const result = {
   lunar: moon.formatPoint(-86, 30, 10, "full"),

@@ -12,6 +12,7 @@ import { resolve } from "node:path";
 import { classifyLatLon } from "../src/moon/crs.js";
 import { formatLgrs, formatLgrsLabel } from "../src/moon/format.js";
 import { projectLatLon, unprojectToLatLon } from "../src/moon/projection.js";
+import { projectedGridBearing } from "./helpers/projectedGridBearing.js";
 
 // Fixtures come from `npm run lgrs:reference-corpus` (scripts/lgrs-reference).
 
@@ -451,6 +452,22 @@ describe("lgrs 0.4.0 reference corpus", () => {
           if (!ok || !(dE <= PROJECTION_TOLERANCE_METERS && dN <= PROJECTION_TOLERANCE_METERS)) {
             mismatches.add(`${id}: ${show(point)} |dE|=${dE} |dN|=${dN} ok=${ok}`);
           }
+        }
+      }
+      mismatches.assertNone();
+    });
+
+    it("matches the oracle grid bearing in the origin CRS", () => {
+      expect(bearingCases.length).toBeGreaterThan(0);
+      const mismatches = new Mismatches("bearings");
+      for (const testCase of bearingCases) {
+        const actual = projectedGridBearing(testCase.origin, testCase.destination);
+        const difference = angleDifference(actual, testCase.expectedBearing);
+        if (!(actual >= 0 && actual < 360 && difference <= ANGLE_TOLERANCE_DEGREES)) {
+          mismatches.add(
+            `[${testCase.category}] ${show(testCase.origin)} -> ${show(testCase.destination)}: ` +
+              `${actual}, expected ${testCase.expectedBearing} (range ${testCase.expectedRange} m)`
+          );
         }
       }
       mismatches.assertNone();
