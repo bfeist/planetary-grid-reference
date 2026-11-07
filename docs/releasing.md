@@ -1,25 +1,26 @@
 # Releasing
 
-Use npm trusted publishing from GitHub Actions. The workflow obtains a short-lived
-OIDC credential for the publish job; it does not need a stored `NPM_TOKEN` or a
-long-lived token that bypasses two-factor authentication.
+A push to `main` runs **Publish npm package**. It publishes a new manifest version
+after the package checks pass, then pushes a matching Git tag on the published
+commit. Stable versions go to npm's `latest` distribution tag and prereleases go
+to `beta`. An already published version skips publication.
 
-After the initial package exists, configure its npm trusted publisher for GitHub
-owner `bfeist`, repository `planetary-grid-reference`, workflow `publish.yml`.
+1. In the release PR, run `npm version minor --no-git-tag-version` for a feature
+   release or `npm version patch --no-git-tag-version` for a fix. Commit both
+   manifests, document any output or API changes, and run `npm run check`.
+2. Merge the PR into `main` and check the publish workflow run. It creates the
+   `v<version>` Git tag after npm accepts the version.
+3. Verify the published artifact and install that exact version in the consuming
+   app.
+
+If publication or tagging fails, rerun all jobs in the original run. If npm already
+accepted that commit, the rerun can finish tagging it without republishing.
+The workflow can also be dispatched from `main` for the current version.
+
+npm trusted publishing uses a short-lived OIDC credential from GitHub Actions.
+In the npm package settings, authorize GitHub owner `bfeist`, repository
+`planetary-grid-reference`, and workflow `publish.yml` for direct publication.
 Keep the package's existing two-factor authentication requirements enabled.
 
-For a release:
-
-1. Update the version and lockfile, document output/API changes, and run `npm run check`.
-2. Commit, push, and create a matching tag such as `v0.1.0`.
-3. Run the **Publish npm package** workflow with that tag as its input.
-4. Verify the published artifact and install that exact version in the consuming app.
-
-The workflow verifies the tag against `package.json`, validates the package on
-Node 24, and publishes prereleases under `beta` or stable versions under `latest`.
-Its Node/npm installation must meet npm's current trusted-publishing requirements.
-An initial maintainer-authenticated bootstrap publication is separate from later
-OIDC releases. Configure trust before dispatching the workflow.
-
 See [npm trusted publishing documentation](https://docs.npmjs.com/trusted-publishers/)
-for account setup and the current supported runner/toolchain requirements.
+for account setup and the supported runner and toolchain requirements.

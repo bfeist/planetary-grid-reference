@@ -1,6 +1,6 @@
 {
   "name": "@bfeist/planetary-grid-reference",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Browser-oriented TypeScript port of selected LGRS coordinate features, with Earth analog grids.",
   "type": "module",
   "sideEffects": false,
@@ -47,7 +47,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tests/tsconfig.json",
     "lint": "prettier --check src tests bench scripts examples *.json *.ts README.md docs .github",
     "format": "prettier --write src tests bench scripts examples *.json *.ts README.md docs .github",
     "test": "vitest run",
@@ -81,5 +81,8 @@
     "browser",
     "typescript",
     "analog"
-  ]
+  ],
+  "bin": {
+    "planetary-grid-reference": "dist/cli.js"
+  }
 }
