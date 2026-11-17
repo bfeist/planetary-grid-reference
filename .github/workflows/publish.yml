@@ -1,4 +1,4 @@
-name: Publish npm package
+name: Publish npm package and GitHub Release
 on:
   push:
     branches: [main]
@@ -16,6 +16,7 @@ jobs:
       action: ${{ steps.release.outputs.action }}
       tag: ${{ steps.release.outputs.tag }}
       dist_tag: ${{ steps.release.outputs.dist_tag }}
+      commit: ${{ steps.release.outputs.commit }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -51,7 +52,7 @@ jobs:
     needs: [prepare, validate]
     if: >-
       ${{ !cancelled() && needs.prepare.result == 'success' &&
-      (needs.prepare.outputs.action == 'tag' ||
+      (needs.prepare.outputs.action == 'tag' || needs.prepare.outputs.action == 'release' ||
       (needs.prepare.outputs.action == 'publish' && needs.validate.result == 'success')) }}
     runs-on: ubuntu-latest
     permissions:
@@ -81,9 +82,27 @@ jobs:
       - name: Tag the published commit
         env:
           RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+          RELEASE_COMMIT: ${{ needs.prepare.outputs.commit }}
         run: |
           if ! git show-ref --verify --quiet "refs/tags/$RELEASE_TAG"; then
-            git tag "$RELEASE_TAG" "$GITHUB_SHA"
+            git tag "$RELEASE_TAG" "$RELEASE_COMMIT"
             git push origin "refs/tags/$RELEASE_TAG"
           fi
-          test "$(git rev-list -1 "refs/tags/$RELEASE_TAG")" = "$GITHUB_SHA"
+          test "$(git rev-list -1 "refs/tags/$RELEASE_TAG")" = "$RELEASE_COMMIT"
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+          DIST_TAG: ${{ needs.prepare.outputs.dist_tag }}
+        run: |
+          if gh release view "$RELEASE_TAG" > /dev/null 2>&1; then
+            echo "GitHub Release $RELEASE_TAG already exists."
+            exit 0
+          fi
+          flags=()
+          if [ "$DIST_TAG" = "beta" ]; then
+            flags+=(--prerelease)
+          fi
+          gh release create "$RELEASE_TAG" --verify-tag --generate-notes \
+            --title "Planetary Grid Reference ${RELEASE_TAG#v}" "${flags[@]}"

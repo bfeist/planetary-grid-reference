@@ -25,13 +25,22 @@ async function npmVersion(spec) {
 }
 
 const published = await npmVersion(version);
-let action = "skip";
+let action;
+let releaseCommit = commit;
 if (published) {
   if (tagCommit && published.gitHead && tagCommit !== published.gitHead) {
     throw new Error(`${tag} and the npm version point to different commits.`);
   }
-  // A failed tag push can be retried on the original publishing commit.
-  if (published.gitHead === commit && !tagCommit) action = "tag";
+  releaseCommit = published.gitHead || tagCommit;
+  if (!releaseCommit) {
+    throw new Error(`Cannot identify the published commit for ${tag}.`);
+  }
+  const ancestry = spawnSync("git", ["merge-base", "--is-ancestor", releaseCommit, commit]);
+  if (ancestry.status !== 0) {
+    throw new Error(`The published ${tag} commit is not an ancestor of this commit.`);
+  }
+  // Retry missing tags and GitHub Releases even after main has advanced.
+  action = tagCommit ? "release" : "tag";
 } else {
   if (tagCommit && tagCommit !== commit) {
     throw new Error(`${tag} already points to another commit.`);
@@ -47,4 +56,7 @@ if (published) {
 }
 
 console.log(`${name}@${version}: ${action} (${tag}, ${distTag})`);
-appendFileSync(process.env.GITHUB_OUTPUT, `action=${action}\ntag=${tag}\ndist_tag=${distTag}\n`);
+appendFileSync(
+  process.env.GITHUB_OUTPUT,
+  `action=${action}\ntag=${tag}\ndist_tag=${distTag}\ncommit=${releaseCommit}\n`
+);
