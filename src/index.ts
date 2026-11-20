@@ -2,6 +2,7 @@ import { getEarthGridSystem } from "./earth/system.js";
 import { moonGridSystem } from "./moon/system.js";
 import type { GridLabelScheme, LgrsGridSystem, MissionGridSystemId } from "./types.js";
 
+export type {} from "./ambient.js";
 export type * from "./types.js";
 export { LGRS_CRS_INVALID, conformLongitude, getEnvelopeLongitudes } from "./common.js";
 

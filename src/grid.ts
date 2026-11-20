@@ -1,3 +1,4 @@
+export type {} from "./ambient.js";
 export * from "./mapProjection.js";
 export * from "./gridBinding.js";
 export * from "./grid/plan.js";

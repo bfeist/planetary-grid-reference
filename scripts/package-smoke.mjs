@@ -47,7 +47,7 @@ console.log("Packed ESM consumer: lunar, Earth ACC/MGRS, geometry, invalid input
   writeFileSync(
     join(consumer.directory, "consumer.ts"),
     `
-import { getGridSystem, type LgrsGridSystem, type LgrsRenderPlan } from "@bfeist/planetary-grid-reference";
+import { getGridSystem } from "@bfeist/planetary-grid-reference";
 import { moonGridSystem } from "@bfeist/planetary-grid-reference/moon";
 import { getEarthGridSystem } from "@bfeist/planetary-grid-reference/analogs";
 import { getLgrsGridBinding, createLgrsRenderPlan } from "@bfeist/planetary-grid-reference/grid";
@@ -79,7 +79,7 @@ void [system, label, plan];
     [join(packageRoot, "node_modules/typescript/bin/tsc"), "-p", "tsconfig.json"],
     { cwd: consumer.directory, stdio: "inherit" }
   );
-  console.log("Packed TypeScript declarations: strict consumer without Node/DOM types passed.");
+  console.log("Packed TypeScript declarations: ambient types in a strict consumer passed.");
   const command = ["exec", "--offline", "--", "planetary-grid-reference", "export-geojson"];
   const earthArgs = ["--planet", "earth", "--bbox=-95.091,29.559,-95.089,29.560"];
   const mgrs = JSON.parse(npm([...command, ...earthArgs], consumer.directory));

@@ -1,3 +1,4 @@
+export type {} from "./ambient.js";
 export * from "./moon/affine.js";
 export * from "./moon/clip.js";
 export * from "./moon/constants.js";

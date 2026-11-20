@@ -52,6 +52,15 @@ public package exports. It is bundled for the browser without Node built-ins or
 polyfills and includes a plain Canvas grid renderer. React, OpenLayers, and AEGIS
 are not required. Node ESM use is also supported; development requires Node 22.12+.
 
+### TypeScript in AEGIS
+
+An existing import from the package makes common grid types such as `LgrsCrsId`,
+`LgrsGridSystem`, and `LgrsRenderPlan` available throughout the TypeScript project.
+The package also supports named type imports. When upgrading AEGIS to version
+0.3.0, remove the package type aliases from `src/typings/lgrs.d.ts` and
+`src/typings/lgrsGrid.d.ts` to avoid duplicate declarations. Keep AEGIS-specific
+types such as `LgrsCompatibility` in those files.
+
 ## Scope compared with Python LGRS
 
 The comparison targets [LGRS v0.4.0's usage guide](https://github.com/rbeyer/lgrs/blob/v0.4.0/usage.rst).
