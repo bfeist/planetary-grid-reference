@@ -194,7 +194,7 @@ const out = new Float64Array(2);
 const other = new Float64Array(2);
 const latLon = new Float64Array(2);
 
-function buildPlan(viewport: Viewport) {
+function buildPlan(viewport: Viewport, extra: Partial<LgrsRenderOptions> = {}) {
   const adapter = adapterFor(viewport.projection);
   expect(adapter.latLonToMap(viewport.lat, viewport.lon, out)).toBe(true);
   const r = viewport.resolution;
@@ -211,6 +211,7 @@ function buildPlan(viewport: Viewport) {
     gridSpacingMode: viewport.spacing ?? "auto",
     gridLabelInterval: viewport.labels ?? "auto",
     labelsVisible: true,
+    ...extra,
   });
   return { adapter, extent, plan };
 }
@@ -353,6 +354,39 @@ describe.each(VIEWPORTS)("createLgrsRenderPlan: $name", (viewport) => {
 });
 
 describe("createLgrsRenderPlan caps and tiers", () => {
+  test("auto zoom levels use standard line and label spacings", () => {
+    const boxSpacings = moonGridSystem.getBoxSpacings();
+    const spacings = [0.1, 0.3, 1, 5, 20, 60].map((resolution) => {
+      const { plan } = buildPlan({ ...VIEWPORTS[0], resolution });
+      expect(boxSpacings).toContain(plan.lineSpacing);
+      expect(boxSpacings).toContain(plan.labelSpacing);
+      expect(plan.labelSpacing % plan.lineSpacing).toBe(0);
+      return plan.lineSpacing;
+    });
+    expect(spacings).toEqual([...spacings].sort((a, b) => a - b));
+    expect(new Set(spacings)).toEqual(new Set(boxSpacings));
+  });
+
+  test("labelFits skips auto spacings and labels that do not fit their cells", () => {
+    const viewport = { ...VIEWPORTS[0], resolution: 1 };
+    const checked: string[] = [];
+    const labelFits = (text: string, cellPixels: number) => {
+      checked.push(text);
+      return text.length * 30 <= cellPixels;
+    };
+    const loose = buildPlan(viewport).plan;
+    const { plan, adapter } = buildPlan(viewport, { labelFits });
+    expect(plan.lineSpacing).toBeGreaterThan(loose.lineSpacing);
+    // Auto spacing checks the widest form of each label: letters as "W", digits as "8".
+    expect(checked.some((text) => /^[^\p{L}\d]*$/u.test(text.replace(/[W8]/g, "")))).toBe(true);
+    expect(plan.labels.length).toBeGreaterThan(0);
+    for (const label of plan.labels) {
+      const [x, y] = label.coordinate;
+      const mpp = metersPerPixel(adapter, label.crs, x, y, viewport.resolution);
+      expect(label.text.length * 30).toBeLessThanOrEqual((plan.lineSpacing / mpp) * 1.01);
+    }
+  });
+
   test.each([179.9, -179.9])("wraps zone-tier seams and labels at longitude %s", (lon) => {
     const { plan } = buildPlan({
       name: "wrapped zone framework",
@@ -449,7 +483,7 @@ describe("createLgrsRenderPlan caps and tiers", () => {
     expect(degenerate.tier).toBe("none");
   });
 
-  test("a minimap coarsens the inherited spacing per region to ≥ 3 px", () => {
+  test("a minimap coarsens to the first box spacing with room for the lines", () => {
     // A 300 × 300 px minimap over the Apollo 14 site.
     const adapter = adapterFor("mercator");
     adapter.latLonToMap(-3.6, -17.5, out);
@@ -466,10 +500,10 @@ describe("createLgrsRenderPlan caps and tiers", () => {
       inheritedSpacing: { line: 10, label: 20 },
     });
     expect(plan.capped).toBe(false);
-    expect(plan.lineSpacing).toBe(40);
+    expect(plan.lineSpacing).toBe(100);
     const mpp = metersPerPixel(adapter, getLtmCrsId(21, "S"), out[0], out[1], resolution);
     expect(plan.lineSpacing / mpp).toBeGreaterThanOrEqual(3);
-    expect(plan.lineSpacing / 2 / mpp).toBeLessThan(3);
+    expect(10 / mpp).toBeLessThan(3);
     expect(plan.labels).toEqual([]);
   });
 });

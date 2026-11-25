@@ -179,7 +179,7 @@ const VIEWPORTS: Viewport[] = [
     projection: "mercator",
     lat: 64,
     lon: -16.5,
-    resolution: 50,
+    resolution: 5,
     tier: "box",
     regions: [utm(28)],
   },
@@ -452,11 +452,29 @@ describe.each(SCHEMES)("Earth render plans (%s)", (scheme) => {
 describe("Earth schemes share the grid", () => {
   const fixed = VIEWPORTS.filter((viewport) => typeof viewport.spacing === "number");
 
-  test.each(fixed)("$name: same lines, labels differ only in text", (viewport) => {
+  // At 1 km, capped labels coarsen to different box spacings in the two schemes.
+  const sharedLabels = fixed.filter((viewport) => viewport.name !== "JSC fixed 1 km");
+
+  test.each(fixed)("$name: same lines at the same spacing", (viewport) => {
     const accPlan = buildPlan(viewport, "lunar-acc").plan;
     const mgrsPlan = buildPlan(viewport, "mgrs").plan;
     expect(mgrsPlan.lineSpacing).toBe(accPlan.lineSpacing);
     expect(mgrsPlan.lines).toEqual(accPlan.lines);
+  });
+
+  test("capped labels coarsen to each scheme's next box spacing", () => {
+    const viewport = fixed.find((candidate) => candidate.name === "JSC fixed 1 km")!;
+    const accPlan = buildPlan(viewport, "lunar-acc").plan;
+    const mgrsPlan = buildPlan(viewport, "mgrs").plan;
+    expect([accPlan.capped, mgrsPlan.capped]).toEqual([true, true]);
+    expect(accPlan.labelSpacing).toBe(25000);
+    expect(mgrsPlan.labelSpacing).toBe(10000);
+  });
+
+  test.each(sharedLabels)("$name: labels differ only in text", (viewport) => {
+    const accPlan = buildPlan(viewport, "lunar-acc").plan;
+    const mgrsPlan = buildPlan(viewport, "mgrs").plan;
+    expect(mgrsPlan.labelSpacing).toBe(accPlan.labelSpacing);
     expect(mgrsPlan.labels.map((label) => label.node)).toEqual(
       accPlan.labels.map((label) => label.node)
     );

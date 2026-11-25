@@ -331,8 +331,15 @@ export type LgrsRenderOptions = {
   gridLabelInterval: LgrsGridSpacing;
   labelsVisible: boolean;
   /**
+   * Optional label fit check: whether `text` fits a grid cell `cellPixels` wide on screen. Auto
+   * spacing skips box spacings whose widest label would not fit, and labels that do not fit
+   * their own cell are omitted.
+   */
+  labelFits?: (text: string, cellPixels: number) => boolean;
+  /**
    * Spacing published by the dashboard. A minimap passes it to draw the same lines, coarsened
-   * per region until adjacent lines are a few pixels apart. Replaces both spacing modes.
+   * to the system's next box spacing until adjacent lines are a few pixels apart. Replaces both
+   * spacing modes.
    */
   inheritedSpacing?: { line: number; label: number } | null;
   caps?: Partial<LgrsRenderCaps>;
@@ -433,8 +440,9 @@ export type LgrsBoxResult = {
   status: "ok" | "lines";
   lines: LgrsRenderLine[];
   labels: LgrsRenderLabel[];
-  /** Factor the label spacing was doubled to so the labels fit the cap. */
-  labelScale: number;
+  /** Label spacing drawn, coarsened to a box spacing when the labels exceed the cap. */
+  labelSpacing: number;
+  labelsCapped: boolean;
   regions: LgrsCrsId[];
   vertexCount: number;
 };

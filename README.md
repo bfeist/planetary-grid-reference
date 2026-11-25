@@ -131,6 +131,13 @@ const plan = createLgrsRenderPlan({
 console.log(plan.lineSpacing, plan.vertexCount);
 ```
 
+Line and label spacings are the system's box spacings (10 m, 100 m, 1 km and 25 km for
+LGRS/ACC; 10 m to 100 km for MGRS). `"auto"` targets about 400 line cells and, when labels
+are visible, keeps lines at least 24 px apart. Pass `labelFits(text, cellPixels)` to skip
+auto spacings whose widest label would not fit a cell and to omit individual labels that
+do not fit their own cell. Labels over the cap move to the next box spacing. A minimap's
+`inheritedSpacing` is coarsened to the next box spacing that leaves lines at least 3 px apart.
+
 Supply a `proj4Def` for projection codes proj4 does not know. Coordinate-only
 imports do not load the planner. The package does not select mission defaults,
 persist UI preferences, calculate navigation bearings, or render a map for you.
